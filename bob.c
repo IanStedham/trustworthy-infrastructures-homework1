@@ -7,11 +7,13 @@
 
 int main(int argc, char *argv[]) {
     int messageLength = 51;
+    int seedLength = 31;
     unsigned char* cipherText = Read_File("Ciphertext.txt", &messageLength);
+    unsigned char* seedFile = Read_File("SharedSeed.txt", &seedLength);
     unsigned char* prng = PRNG(seedFile, seedLength, messageLength);
     unsigned char* plainText = malloc(messageLength + 1);
     for (int x = 0; x < messageLength; x++) {
-        plainText[x] = cipher2[x] ^ prng2[x];
+        plainText[x] = cipherText[x] ^ prng[x];
         printf("%c", plainText[x]);
     }
     printf("\n");
