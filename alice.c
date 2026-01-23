@@ -8,7 +8,7 @@
 //rotates bit left by N bits
 #define rotate_left(a,b) (((a) << (b)) | ((a) >> (32 - (b)())))
 
-//scrambles words: adds, XOR, than 
+//scrambles words: adds, XOR, rotate left/bit diffusion
 void quarterround(uint32_t *a, uint32_t *b, uint32_t *c, uint32_t *d) {
     *a += *b;  *d ^= *a;  *d = ROTL(*d, 16);
     *c += *d;  *b ^= *c;  *b = ROTL(*b, 12);
