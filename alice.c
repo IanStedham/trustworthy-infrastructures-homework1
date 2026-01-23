@@ -1,24 +1,66 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-
+#include <unistd.h>
 #include <openssl/evp.h>
 #include <openssl/sha.h>
 
-
+// function declarations
+unsigned char* Read_File(char fileName[], int *fileLen);
+void Write_File(char fileName[], char input[], int input_length);
+void Show_in_Hex(char name[], unsigned char hex[], int hexlen);
+void Convert_to_Hex(char output[], unsigned char input[], int inputlength);
+unsigned char* PRNG(unsigned char *seed, unsigned long seedlen, unsigned long prnglen);
+unsigned char* Hash_SHA256(unsigned char* input, unsigned long inputlen);
+unsigned char* Hex_to_Bytes(char hexString[], int *outLen);
 
 int main(int argc, char *argv[]) {
     // Read the shared seed
-    int seedLength = 31;
+    int seedLength;
     unsigned char* seed = Read_File(argv[2], &seedLength);
 
     //read the message
-    int messageLength = 51;
-    unsigned char* message = Read_File(argv[1], &messageLength)
+    int messageLength;
+    unsigned char* message = Read_File(argv[1], &messageLength) //Read_file will provide &messageLength
 
-    //PNRG component
+    //generate keystream
     unsigned char* key = PNRG(seed, seedLength, messageLength)
 
+    //convert to hex
+    char* keyHex = (char*)malloc(messageLength * 2 + 1);
+    to_Hex(keyHex, key, messageLength);
+    Write_File("key.txt", keyHex, messageLength * 2);
+
+    free(keyHex)
+
+    //create ciphertext --> XOR message with keystream
+    unsigned char* ciphertext = (unsigned char*)malloc(messageLength)
+    for (int i=0; i < messageLength; i++) {
+        ciphertext[i] = message[i]  ^ key[i];
+    }
+    
+    //ciphertext -> hex -> ciphertext.txt
+    char* ciphertextHex = (char*)malloc(messageLength * 2 + 1);
+    to_Hex(ciphertextHex, ciphertext, messageLength)
+    Write_File("Ciphertext.txt", ciphertextHex, messageLength * 2);
+
+    sleep(1);
+
+    //verify authenticity of message
+    int hashLength;
+    unsigned char* bobHashHex = Read_File("Hash.txt", &hashLength)
+    unsigned char* bobHash = hex2Bytes((char*)bobHashHex, &hashLength)
+
+    //take hash of original
+    unsigned char* aliceHash = Hash_SHA256(message, messageLength);
+
+    if (aliceHash != bobHash) {
+        print("Hash acknowledgement failed");
+    }
+    else: {
+        print("Acknowledgment successful");
+    }
+    return 0;
 
 }
 
@@ -38,9 +80,9 @@ unsigned char* Read_File (char fileName[], int *fileLen)
 		exit(0);
 	}
     fseek(pFile, 0L, SEEK_END);
-    int temp_size = ftell(pFile)+1;
+    int temp_size = ftell(pFile)+1; //get file size
     fseek(pFile, 0L, SEEK_SET);
-    unsigned char *output = (unsigned char*) malloc(temp_size);
+    unsigned char *output = (unsigned char*) malloc(temp_size); //messageLength variable from main
 	fgets(output, temp_size, pFile);
 	fclose(pFile);
 
@@ -61,16 +103,41 @@ void Write_File(char fileName[], char input[], int input_length){
   fwrite(input, 1, input_length, pFile);
   fclose(pFile);
 }
+/*============================
+        convert to Hex 
+==============================*/
+void byte2Hex(char output[], unsigned char input[], int inputlength)
+{
+    for (int i = 0; i < inputLength; i++) {
+        sprintf(&output[2*i], "%02x", input[i]);
+    }
+    output[2 * inputLength] = '\0'; 
+}
 
 /*============================
         Showing in Hex 
 ==============================*/
-void Show_in_Hex (char name[], unsigned char hex[], int hexlen)
+void show_in_Hex (char name[], unsigned char hex[], int hexlen)
 {
 	printf("%s: ", name);
 	for (int i = 0 ; i < hexlen ; i++)
    		printf("%02x", hex[i]);
 	printf("\n");
+}
+/*============================
+        hex to bytes 
+==============================*/
+unsigned char* hex2Bytes(char hexString[], int *outLen)
+{
+    int len = strlen(hexString);
+    *outLen = len / 2;
+    unsigned char *bytes = (unsigned char*)malloc(*outLen);
+    
+    for (int i = 0; i < *outLen; i++) {
+        sscanf(&hexString[2*i], "%2hhx", &bytes[i]);
+    }
+    
+    return bytes;
 }
 /*============================
         PRNG Fucntion 
