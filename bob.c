@@ -5,22 +5,48 @@
 #include <openssl/evp.h>
 #include <openssl/sha.h>
 
+// function declarations
+unsigned char* Read_File(char fileName[], int *fileLen);
+void Write_File(char fileName[], char input[], int input_length);
+void Show_in_Hex(char name[], unsigned char hex[], int hexlen);
+void Convert_to_Hex(char output[], unsigned char input[], int inputlength);
+unsigned char* PRNG(unsigned char *seed, unsigned long seedlen, unsigned long prnglen);
+unsigned char* Hash_SHA256(unsigned char* input, unsigned long inputlen);
+unsigned char* Hex_to_Bytes(char hexString[], int *outLen);
+
 int main(int argc, char *argv[]) {
-    int messageLength = 51;
-    int seedLength = 31;
-    unsigned char* cipherText = Read_File("Ciphertext.txt", &messageLength);
-    unsigned char* seedFile = Read_File("SharedSeed.txt", &seedLength);
-    unsigned char* prng = PRNG(seedFile, seedLength, messageLength);
+    int messageLength;
+    int seedLength;
+
+    // Reading the ciphertext and converting from hex to byte array
+    unsigned char* cipherTextHex; 
+    cipherTextHex = Read_File("Ciphertext.txt", &messageLength);
+    unsigned char* cipherText = Hex_to_Bytes(cipherTextHex, &messageLength);
+    free(cipherTextHex);
+
+    // Reading the shared seed
+    unsigned char* sharedSeed = Read_File("SharedSeed.txt", &seedLength);
+
+    // Creating the PRNG from the shared seed
+    unsigned char* prng = PRNG(sharedSeed, seedLength, messageLength);
+    free(sharedSeed);
+
+    // Deciphering to plain text
     unsigned char* plainText = malloc(messageLength + 1);
     for (int x = 0; x < messageLength; x++) {
         plainText[x] = cipherText[x] ^ prng[x];
-        printf("%c", plainText[x]);
     }
-    printf("\n");
+    free(prng);
+    free(cipherText);
+
+    // Writing plain text to Plaintext.txt
     Write_File("Plaintext.txt", plainText, messageLength);
 
+    // Computing the hash of the plain text
     unsigned char* hashMessage = Hash_SHA256(plainText, messageLength);
-    Write_File("Hash.txt", hashMessage, sizeof(hashMessage));
+    Write_File("Hash.txt", hashMessage, SHA256_DIGEST_LENGTH);
+    free(plainText);
+    free(hashMessage);
     return 0;
 }
 
@@ -45,6 +71,43 @@ unsigned char* Read_File (char fileName[], int *fileLen)
 
     *fileLen = temp_size-1;
 	return output;
+}
+
+/*============================
+        Write to File
+==============================*/
+void Write_File(char fileName[], char input[], int input_length){
+  FILE *pFile;
+  pFile = fopen(fileName,"w");
+  if (pFile == NULL){
+    printf("Error opening file. \n");
+    exit(0);
+  }
+  //fputs(input, pFile);
+  fwrite(input, 1, input_length, pFile);
+  fclose(pFile);
+}
+
+/*============================
+        Showing in Hex 
+==============================*/
+void Show_in_Hex (char name[], unsigned char hex[], int hexlen)
+{
+	printf("%s: ", name);
+	for (int i = 0 ; i < hexlen ; i++)
+   		printf("%02x", hex[i]);
+	printf("\n");
+}
+
+/*============================
+        Convert to Hex 
+==============================*/
+void Convert_to_Hex(char output[], unsigned char input[], int inputlength)
+{
+    for (int i=0; i<inputlength; i++){
+        sprintf(&output[2*i], "%02x", input[i]);
+    }
+    printf("Hex format: %s\n", output);  //remove later
 }
 
 /*============================
@@ -87,16 +150,17 @@ unsigned char* Hash_SHA256(unsigned char* input, unsigned long inputlen)
 }
 
 /*============================
-        Write to File
+        hex to bytes 
 ==============================*/
-void Write_File(char fileName[], char input[], int input_length){
-  FILE *pFile;
-  pFile = fopen(fileName,"w");
-  if (pFile == NULL){
-    printf("Error opening file. \n");
-    exit(0);
-  }
-  //fputs(input, pFile);
-  fwrite(input, 1, input_length, pFile);
-  fclose(pFile);
+unsigned char* Hex_to_Bytes(char hexString[], int *outLen)
+{
+    int len = strlen(hexString);
+    *outLen = len / 2;
+    unsigned char *bytes = (unsigned char*)malloc(*outLen);
+    
+    for (int i = 0; i < *outLen; i++) {
+        sscanf(&hexString[2*i], "%2hhx", &bytes[i]);
+    }
+    
+    return bytes;
 }
