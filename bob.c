@@ -25,7 +25,7 @@ int main(int argc, char *argv[]) {
     free(cipherTextHex);
 
     // Reading the shared seed
-    unsigned char* sharedSeed = Read_File("SharedSeed.txt", &seedLength);
+    unsigned char* sharedSeed = Read_File("./test_vectors/SharedSeed1.txt", &seedLength);
 
     // Creating the PRNG from the shared seed
     unsigned char* prng = PRNG(sharedSeed, seedLength, messageLength);
@@ -61,21 +61,23 @@ int main(int argc, char *argv[]) {
 unsigned char* Read_File (char fileName[], int *fileLen)
 {
     FILE *pFile;
-	pFile = fopen(fileName, "r");
-	if (pFile == NULL)
-	{
-		printf("Error opening file.\n");
-		exit(0);
-	}
+    printf("DEBUG: Trying to open: %s\n", fileName);  // ADD THIS LINE
+    pFile = fopen(fileName, "r");
+    if (pFile == NULL)
+    {
+        printf("Error opening file: %s\n", fileName);  // MODIFY THIS LINE
+        exit(0);
+    }
     fseek(pFile, 0L, SEEK_END);
-    int temp_size = ftell(pFile)+1;
+    int temp_size = ftell(pFile);  // REMOVE THE +1
     fseek(pFile, 0L, SEEK_SET);
-    unsigned char *output = (unsigned char*) malloc(temp_size);
-	fread(output, 1, temp_size, pFile);
-	fclose(pFile);
+    unsigned char *output = (unsigned char*) malloc(temp_size + 1);
+    fread(output, 1, temp_size, pFile);
+    output[temp_size] = '\0';
+    fclose(pFile);
 
-    *fileLen = temp_size;
-	return output;
+    *fileLen = temp_size;  // REMOVE THE -1
+    return output;
 }
 
 /*============================
