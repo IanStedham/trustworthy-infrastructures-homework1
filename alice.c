@@ -24,13 +24,12 @@ int main(int argc, char *argv[]) {
     unsigned char* message = Read_File(argv[1], &messageLength); //Read_file will provide &messageLength
 
     //generate keystream
-    unsigned char* key = PNRG(seed, seedLength, messageLength);
+    unsigned char* key = PRNG(seed, seedLength, messageLength);
 
     //convert to hex
     char* keyHex = (char*)malloc(messageLength * 2 + 1);
-    to_Hex(keyHex, key, messageLength);
-    Write_File("key.txt", keyHex, messageLength * 2);
-    free(keyHex);
+    byte2Hex(keyHex, key, messageLength);
+    Write_File("Key.txt", keyHex, messageLength * 2);
 
     //create ciphertext --> XOR message with keystream
     char* ciphertext = (unsigned char*)malloc(messageLength);
@@ -39,27 +38,34 @@ int main(int argc, char *argv[]) {
     }
     
     //binary -> hex -> ciphertext.txt
-    char* ciphertextHex = (char*)malloc(messageLength * 2 + 1);
-    to_Hex(ciphertextHex, ciphertext, messageLength)
+    unsigned char* ciphertextHex = (char*)malloc(messageLength * 2 + 1);
+    byte2Hex(ciphertextHex, ciphertext, messageLength);
     Write_File("Ciphertext.txt", ciphertextHex, messageLength * 2);
 
     sleep(1);
 
     //verify authenticity of message
-    int bobhashLength;
-    unsigned char* bobHashHex = Read_File("Hash.txt", &bobhashLength)
-    unsigned char* bobHash = hex2Bytes((char*)bobHashHex, &hashLength)
+    int bobHashLength;
+    unsigned char* bobHashHex = Read_File("Hash.txt", &bobHashLength);
+    unsigned char* bobHash = hex2Bytes((char*)bobHashHex, &bobHashLength);
 
     //take hash of original
     unsigned char* aliceHash = Hash_SHA256(message, messageLength);
 
-    if (aliceHash != bobHash) {
-        print("Hash acknowledgement failed");
+    int match = 1;
+    for (int i = 0; i < SHA256_DIGEST_LENGTH; i++){
+        if (aliceHash[i] != bobHash[i]) {
+            match = 0;
+            break;
+        }
     }
-    else: {
-        print("Acknowledgment successful");
+
+    if (!match) {  // If not matching
+        printf("Hash acknowledgement failed\n");
+    } else {
+        printf("Acknowledgment successful\n");
     }
-    
+
     free(seed);
     free(message);
     free(key);
@@ -93,7 +99,7 @@ unsigned char* Read_File (char fileName[], int *fileLen)
     int temp_size = ftell(pFile)+1; //get file size
     fseek(pFile, 0L, SEEK_SET);
     unsigned char *output = (unsigned char*) malloc(temp_size); //messageLength variable from main
-	fgets(output, temp_size, pFile);
+	fread(output, temp_size, pFile);
 	fclose(pFile);
 
     *fileLen = temp_size-1;
@@ -118,10 +124,10 @@ void Write_File(char fileName[], char input[], int input_length){
 ==============================*/
 void byte2Hex(char output[], unsigned char input[], int inputlength)
 {
-    for (int i = 0; i < inputLength; i++) {
+    for (int i = 0; i < inputlength; i++) {
         sprintf(&output[2*i], "%02x", input[i]);
     }
-    output[2 * inputLength] = '\0'; 
+    output[2 * inputlength] = '\0'; 
 }
 
 /*============================
