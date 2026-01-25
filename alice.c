@@ -21,25 +21,24 @@ int main(int argc, char *argv[]) {
 
     //read the message
     int messageLength;
-    unsigned char* message = Read_File(argv[1], &messageLength) //Read_file will provide &messageLength
+    unsigned char* message = Read_File(argv[1], &messageLength); //Read_file will provide &messageLength
 
     //generate keystream
-    unsigned char* key = PNRG(seed, seedLength, messageLength)
+    unsigned char* key = PNRG(seed, seedLength, messageLength);
 
     //convert to hex
     char* keyHex = (char*)malloc(messageLength * 2 + 1);
     to_Hex(keyHex, key, messageLength);
     Write_File("key.txt", keyHex, messageLength * 2);
-
-    free(keyHex)
+    free(keyHex);
 
     //create ciphertext --> XOR message with keystream
-    unsigned char* ciphertext = (unsigned char*)malloc(messageLength)
+    char* ciphertext = (unsigned char*)malloc(messageLength);
     for (int i=0; i < messageLength; i++) {
         ciphertext[i] = message[i]  ^ key[i];
     }
     
-    //ciphertext -> hex -> ciphertext.txt
+    //binary -> hex -> ciphertext.txt
     char* ciphertextHex = (char*)malloc(messageLength * 2 + 1);
     to_Hex(ciphertextHex, ciphertext, messageLength)
     Write_File("Ciphertext.txt", ciphertextHex, messageLength * 2);
@@ -47,8 +46,8 @@ int main(int argc, char *argv[]) {
     sleep(1);
 
     //verify authenticity of message
-    int hashLength;
-    unsigned char* bobHashHex = Read_File("Hash.txt", &hashLength)
+    int bobhashLength;
+    unsigned char* bobHashHex = Read_File("Hash.txt", &bobhashLength)
     unsigned char* bobHash = hex2Bytes((char*)bobHashHex, &hashLength)
 
     //take hash of original
@@ -60,6 +59,17 @@ int main(int argc, char *argv[]) {
     else: {
         print("Acknowledgment successful");
     }
+    
+    free(seed);
+    free(message);
+    free(key);
+    free(keyHex);
+    free(ciphertext);
+    free(ciphertextHex);
+    free(bobHashHex);
+    free(bobHash);
+    free(aliceHash);
+
     return 0;
 
 }
