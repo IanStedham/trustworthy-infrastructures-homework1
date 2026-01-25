@@ -44,11 +44,12 @@ int main(int argc, char *argv[]) {
 
     sleep(1);
 
+    /*
     //verify authenticity of message
     int bobHashLength;
     unsigned char* bobHashHex = Read_File("Hash.txt", &bobHashLength);
     unsigned char* bobHash = hex2Bytes((char*)bobHashHex, &bobHashLength);
-
+    
     //take hash of original
     unsigned char* aliceHash = Hash_SHA256(message, messageLength);
 
@@ -65,16 +66,17 @@ int main(int argc, char *argv[]) {
     } else {
         printf("Acknowledgment successful\n");
     }
-
+    */
+    printf("encryption complete - run bob to decrypt");
     free(seed);
     free(message);
     free(key);
     free(keyHex);
     free(ciphertext);
     free(ciphertextHex);
-    free(bobHashHex);
-    free(bobHash);
-    free(aliceHash);
+    //free(bobHashHex);
+    //free(bobHash);
+    //free(aliceHash);
 
     return 0;
 

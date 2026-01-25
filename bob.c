@@ -49,6 +49,10 @@ int main(int argc, char *argv[]) {
     Write_File("Hash.txt", hashHex, SHA256_DIGEST_LENGTH * 2);
     free(hashHex);
 
+    free(plainText);
+    free(hashMessage);
+
+    return 0;
 }
 
 /*============================
@@ -67,10 +71,10 @@ unsigned char* Read_File (char fileName[], int *fileLen)
     int temp_size = ftell(pFile)+1;
     fseek(pFile, 0L, SEEK_SET);
     unsigned char *output = (unsigned char*) malloc(temp_size);
-	fgets(output, temp_size, pFile);
+	fread(output, 1, temp_size, pFile);
 	fclose(pFile);
 
-    *fileLen = temp_size-1;
+    *fileLen = temp_size;
 	return output;
 }
 
