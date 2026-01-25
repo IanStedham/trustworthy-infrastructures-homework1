@@ -86,24 +86,26 @@ int main(int argc, char *argv[]) {
 /*============================
         Read from File
 ==============================*/
-unsigned char* Read_File (char fileName[], int *fileLen)
+unsigned char* Read_File(char fileName[], int *fileLen)
 {
     FILE *pFile;
-	pFile = fopen(fileName, "r");
-	if (pFile == NULL)
-	{
-		printf("Error opening file.\n");
-		exit(0);
-	}
+    printf("DEBUG: Trying to open: %s\n", fileName);
+    pFile = fopen(fileName, "r");
+    if (pFile == NULL)
+    {
+        printf("Error opening file: %s\n", fileName);
+        exit(0);
+    }
     fseek(pFile, 0L, SEEK_END);
-    int temp_size = ftell(pFile)+1; //get file size
+    int temp_size = ftell(pFile);
     fseek(pFile, 0L, SEEK_SET);
-    unsigned char *output = (unsigned char*) malloc(temp_size); //messageLength variable from main
-	fread(output, 1, temp_size, pFile); //destination, size_of_each_element, number_of_elements, file_pointer
-	fclose(pFile);
+    unsigned char *output = (unsigned char*)malloc(temp_size + 1);
+    fread(output, 1, temp_size, pFile);
+    output[temp_size] = '\0';
+    fclose(pFile);
 
-    *fileLen = temp_size-1;
-	return output;
+    *fileLen = temp_size;
+    return output;
 }
 /*============================
         Write to File

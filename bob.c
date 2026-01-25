@@ -44,10 +44,11 @@ int main(int argc, char *argv[]) {
 
     // Computing the hash of the plain text
     unsigned char* hashMessage = Hash_SHA256(plainText, messageLength);
-    Write_File("Hash.txt", hashMessage, SHA256_DIGEST_LENGTH);
-    free(plainText);
-    free(hashMessage);
-    return 0;
+    char* hashHex = (char*)malloc(SHA256_DIGEST_LENGTH * 2 + 1);
+    Convert_to_Hex(hashHex, hashMessage, SHA256_DIGEST_LENGTH);
+    Write_File("Hash.txt", hashHex, SHA256_DIGEST_LENGTH * 2);
+    free(hashHex);
+
 }
 
 /*============================
