@@ -9,10 +9,10 @@
 unsigned char* Read_File(char fileName[], int *fileLen);
 void Write_File(char fileName[], char input[], int input_length);
 void Show_in_Hex(char name[], unsigned char hex[], int hexlen);
-void Convert_to_Hex(char output[], unsigned char input[], int inputlength);
+void byte2Hex(char output[], unsigned char input[], int inputlength);
 unsigned char* PRNG(unsigned char *seed, unsigned long seedlen, unsigned long prnglen);
 unsigned char* Hash_SHA256(unsigned char* input, unsigned long inputlen);
-unsigned char* Hex_to_Bytes(char hexString[], int *outLen);
+unsigned char* hex2Bytes(char hexString[], int *outLen);
 
 int main(int argc, char *argv[]) {
     // Read the shared seed
@@ -99,7 +99,7 @@ unsigned char* Read_File (char fileName[], int *fileLen)
     int temp_size = ftell(pFile)+1; //get file size
     fseek(pFile, 0L, SEEK_SET);
     unsigned char *output = (unsigned char*) malloc(temp_size); //messageLength variable from main
-	fread(output, temp_size, pFile);
+	fread(output, 1, temp_size, pFile); //destination, size_of_each_element, number_of_elements, file_pointer
 	fclose(pFile);
 
     *fileLen = temp_size-1;
