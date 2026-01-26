@@ -1,0 +1,21 @@
+DEBUG: opening: Message1.txt
+DEBUG: opening: SharedSeed1.txt
+DEBUG: opening: Hash.txt
+Error opening: Hash.txt
+DEBUG: opening: Message1.txt
+DEBUG: opening: SharedSeed1.txt
+DEBUG: opening: Hash.txt
+Hash acknowledgement failed
+encryption complete - run bob to decryptDEBUG: opening: Message1.txt
+DEBUG: opening: SharedSeed1.txt
+DEBUG: opening: Hash.txt
+encryption complete - run bob to decryptDEBUG: opening: Message1.txt
+DEBUG: opening: SharedSeed1.txt
+DEBUG: opening: Hash.txt
+encryption complete - run bob to decryptDEBUG: opening: Message1.txt
+DEBUG: opening: SharedSeed1.txt
+DEBUG: opening: Hash.txt
+encryption complete - run bob to decryptDEBUG: opening: Message1.txt
+DEBUG: opening: SharedSeed1.txt
+DEBUG: opening: Hash.txt
+encryption complete - run bob to decrypt
