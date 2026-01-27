@@ -1,0 +1,19 @@
+Ian Stedham, Ryan Power
+Privacy-Preserving and Trustworthy Cyber-Systems
+Dr. Yavuz
+January 29, 2026
+
+Extra Credit
+A. If Alice’s computer reset and then resumed encryption this can result in vulnerabilities to a Cold Boot attack. This is 
+   an attack where the attacker has physical access to the computer and accesses data within the RAM after an immediate restart; 
+   this is due to data within the RAM being gradually removed on shutdown instead of all at once. Within our program this can 
+   expose our Key.txt file which would completely compromise our encryption. Given access to the Key.txt file an attacker would 
+   be able to easily decipher our messages by XORing the cipher with the key: cipher XOR key = plaintext. 
+B. There are a couple ways to mitigate this vulnerability. One simple way is to not store the Key.txt file at all; if we 
+   generate the key bit by bit and XOR this with the plaintext as it is generated we do not need to store Key.txt and can avoid 
+   this vulnerability. If the key does need to be stored, we can use a secure internet connection to store the key without it 
+   ever needing to be put in our RAM.
+
+Sources:
+https://en.wikipedia.org/wiki/Cold_boot_attack 
+https://www.usenix.org/legacy/event/sec08/tech/full_papers/halderman/halderman.pdf 
