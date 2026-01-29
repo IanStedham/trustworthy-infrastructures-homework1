@@ -1,0 +1,18 @@
+//Name: Ryan Powers
+//Prof: Dr.Yavuz
+//Course: Privacy-Preserving and Trustworthy Cyber-Infrastructures
+//Date: 1/30/26
+//Assignment: HW1 - Chacha20 Implementation - Extra Credit
+
+A.
+As with any stream cipher, the twotime pad vulnerability is present. This vulnerability is only made possible when
+the keystream is reused. Stream ciphers encrypt by XOR'ing the keystream with the plaintext. In Alice's case, since she is 
+restarting the encryption process wwith the same parameters will recreate the same keystream bytes. If an attacker had access to her
+device, and finds consecutive ciphertexts, the attacker can XOR the ciphertexts to find the result of the plaintext XOR'ed with 
+the keystream.
+
+B.
+To prevent this attack from being possible, the parameters used to generate the keystream should be dynamic/one-time use. For each
+encryption cycle, the nonce should be randomly generated. Ultimately, the nonce being unique and unpredictable will prevent this attack.
+Nonce's can be generated locally using the openssl/rand.h component or some web API that returns random bytes.
+
