@@ -9,7 +9,8 @@ As with any stream cipher, the twotime pad vulnerability is present. This vulner
 the keystream is reused. Stream ciphers encrypt by XOR'ing the keystream with the plaintext. In Alice's case, since she is 
 restarting the encryption process wwith the same parameters will recreate the same keystream bytes. If an attacker had access to her
 device, and finds consecutive ciphertexts, the attacker can XOR the ciphertexts to find the result of the plaintext XOR'ed with 
-the keystream.
+the keystream. This can be done through a cold boot attack where the attacker accesses the computer's RAM after a restart to find the 
+original ciphertext from before the restart.
 
 B.
 To prevent this attack from being possible, the parameters used to generate the keystream should be dynamic/one-time use. For each
