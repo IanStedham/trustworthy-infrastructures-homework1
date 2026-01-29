@@ -1,9 +1,16 @@
+//Name: Ryan Powers
+//Prof: Dr.Yavuz
+//Course: Privacy-Preserving and Trustworthy Cyber-Infrastructures
+//Date: 1/30/26
+//Assignment: HW1 - Chacha20 Implementation
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
 #include <openssl/evp.h>
 #include <openssl/sha.h>
+//#include <openssl/rand.h>
 
 // function declarations
 unsigned char* Read_File(char fileName[], int *fileLen);
@@ -17,18 +24,18 @@ unsigned char* Hash_SHA256(unsigned char* input, unsigned long inputlen);
 int main(int argc, char *argv[]) {
     //read arg[1] -> the message
     int messageLength;
-    unsigned char* message = Read_File(argv[1], &messageLength); 
+    unsigned char* message = Read_File(argv[1], &messageLength); //first arg is the message
 
     //read arg2 - the sharedseed
     int seedLength;
-    unsigned char* seed = Read_File(argv[2], &seedLength);
+    unsigned char* seed = Read_File(argv[2], &seedLength); //second arg is seed
 
     //call PNRG function to generate random numbers
     //we pass in the shared seed, seed length and message length
     //this will create a keystream the same length as the message
     unsigned char* key = PRNG(seed, seedLength, messageLength);
 
-    //convert stream to hex
+    //convert binary stream to hex
     char* keyHex = (char*)malloc(messageLength * 2 + 1);
     byte2Hex(keyHex, key, messageLength);
     Write_File("Key.txt", keyHex, messageLength * 2);
@@ -44,12 +51,12 @@ int main(int argc, char *argv[]) {
     byte2Hex(ciphertextHex, ciphertext, messageLength);
     Write_File("Ciphertext.txt", ciphertextHex, messageLength * 2);
 
-    sleep(1);
+    sleep(1); //wait for bob to read cipher + send hash.txt
        
-    //read hash from file
+    //read bob's hash from file
     int receivedHashLength;
     unsigned char* receivedHashHex = Read_File("Hash.txt", &receivedHashLength);
-    unsigned char* receivedHash = hex2Bytes((char*)receivedHashHex, &receivedHashLength); //convert to bytes to compare
+    unsigned char* receivedHash = hex2Bytes((char*)receivedHashHex, &receivedHashLength); //convert to bytes for comparison
     
     //take hash of original message
     unsigned char* aliceHash = Hash_SHA256(message, messageLength);
@@ -62,7 +69,7 @@ int main(int argc, char *argv[]) {
         }
     }
 
-    if (!match) {  //if hashes do not match
+    if (!match) {  //write acknowledgement.txt confirming whether hashs match or not
         unsigned char ack_fail[] = "hash acknowledgement failed";
         //printf(ack_fail);
         Write_File("Acknowledgment.txt", ack_fail, strlen(ack_fail));
@@ -70,21 +77,20 @@ int main(int argc, char *argv[]) {
         unsigned char ack_pass[] = "hash acknowledgement successful";
         //printf(ack_pass);
         Write_File("Acknowledgment.txt", ack_pass, strlen(ack_pass));
-
     }
-    printf("encryption complete - run bob to decrypt");
+
+    //printf("encryption complete - run bob to decrypt");
+
     free(seed);
     free(message);
     free(key);
     free(keyHex);
     free(ciphertext);
     free(ciphertextHex);
-    //free(bobHashHex);
-    //free(bobHash);
-    //free(aliceHash);
-
+    free(receivedHashHex);
+    free(receivedHash);
+    free(aliceHash);
     return 0;
-
 }
 
 /*************************************************************
@@ -107,7 +113,7 @@ unsigned char* Read_File(char fileName[], int *fileLen)
     int temp_size = ftell(pFile);
     fseek(pFile, 0L, SEEK_SET);
     unsigned char *output = (unsigned char*)malloc(temp_size + 1);
-    fread(output, 1, temp_size, pFile);
+    fread(output, 1, temp_size, pFile); //changed to fread() for newline consistency/preference
     output[temp_size] = '\0';
     fclose(pFile);
 
@@ -169,18 +175,18 @@ unsigned char* hex2Bytes(char hexString[], int *outLen)
 ==============================*/
 unsigned char* PRNG(unsigned char *seed, unsigned long seedlen, unsigned long prnglen)
 {
-    EVP_CIPHER_CTX *ctx = EVP_CIPHER_CTX_new();
+    EVP_CIPHER_CTX *ctx = EVP_CIPHER_CTX_new(); //openSSL state object
     unsigned char *pseudoRandomNumber = malloc(prnglen);
 
     unsigned char nonce[16] = {0};
 
-    EVP_EncryptInit_ex(ctx, EVP_chacha20(), NULL, seed, nonce);
+    EVP_EncryptInit_ex(ctx, EVP_chacha20(), NULL, seed, nonce); //evp init: ciphercontext, cipher=chacha20, key=sharedseed*, nonce/IV = all zeroes
 
-    unsigned char zeros[prnglen];
-    memset(zeros, 0, prnglen);
+    unsigned char zeros[prnglen]; //allocate buffer for temp array
+    memset(zeros, 0, prnglen); //fill buffer with zero bytes
 
     int outlen;
-    EVP_EncryptUpdate(ctx, pseudoRandomNumber, &outlen, zeros, prnglen);
+    EVP_EncryptUpdate(ctx, pseudoRandomNumber, &outlen, zeros, prnglen); //create chacha20 keystream
     EVP_EncryptFinal(ctx, pseudoRandomNumber, &outlen);
 
     EVP_CIPHER_CTX_free(ctx);
